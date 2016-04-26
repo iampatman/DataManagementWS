@@ -8,12 +8,14 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     @IBOutlet weak var phone: UITextField!
     @IBOutlet weak var address: UITextField!
     @IBOutlet weak var name: UITextField!
     @IBOutlet weak var status: UILabel!
+    
+    var contacts: [String] = []
     
     var contactDB: COpaquePointer = nil
     var insertStatement: COpaquePointer = nil
@@ -111,7 +113,19 @@ class ViewController: UIViewController {
         let nameStr = name.text as NSString?
         let addressStr = address.text as NSString?
         let phoneStr = phone.text as NSString?
-        sqlite3_bind_text(updateStatement, 1, addressStr!.UTF8String, <#T##Int32#>, <#T##((UnsafeMutablePointer<Void>) -> Void)!##((UnsafeMutablePointer<Void>) -> Void)!##(UnsafeMutablePointer<Void>) -> Void#>)
+        sqlite3_bind_text(updateStatement, 1, nameStr!.UTF8String, -1, SQLITE_TRANSIENT)
+        sqlite3_bind_text(updateStatement, 2, addressStr!.UTF8String, -1, SQLITE_TRANSIENT)
+        sqlite3_bind_text(updateStatement, 3, phoneStr!.UTF8String, -1, SQLITE_TRANSIENT)
+        if (sqlite3_step(updateStatement) == SQLITE_DONE){
+            print("Contact Updated")
+        } else {
+            status.text = "Failed to update contact"
+            print("Error code: \(sqlite3_errcode(contactDB))")
+            let error = String.fromCString(sqlite3_errmsg(contactDB))
+            print("Error Message: ",error)
+        }
+        sqlite3_reset(updateStatement)
+        sqlite3_clear_bindings(updateStatement)
     }
     
     @IBAction func findContact(sender: AnyObject) {
