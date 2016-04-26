@@ -108,6 +108,10 @@ class ViewController: UIViewController {
         
     }
     @IBAction func updateContact(sender: AnyObject) {
+        let nameStr = name.text as NSString?
+        let addressStr = address.text as NSString?
+        let phoneStr = phone.text as NSString?
+        sqlite3_bind_text(updateStatement, 1, addressStr!.UTF8String, <#T##Int32#>, <#T##((UnsafeMutablePointer<Void>) -> Void)!##((UnsafeMutablePointer<Void>) -> Void)!##(UnsafeMutablePointer<Void>) -> Void#>)
     }
     
     @IBAction func findContact(sender: AnyObject) {
