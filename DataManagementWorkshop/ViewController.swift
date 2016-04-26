@@ -86,6 +86,26 @@ class ViewController: UIViewController {
     }
     
     @IBAction func DeleteContact(sender: AnyObject) {
+        
+        let nameStr = name.text as NSString?
+        sqlite3_bind_text(deleteStatement, 1, nameStr!.UTF8String, -1, SQLITE_TRANSIENT)
+        if (sqlite3_step(deleteStatement) == SQLITE_DONE) {
+            status.text = "Contact Deleted"
+            name.text = ""
+            address.text = ""
+            phone.text = ""
+            
+        } else {
+            status.text = "Failed to delete contact"
+            print("Error code: \(sqlite3_errcode(contactDB))")
+            let error = String.fromCString(sqlite3_errmsg(contactDB))
+            print("Error Message: ",error)
+        }
+        sqlite3_reset(deleteStatement)
+        sqlite3_clear_bindings(deleteStatement)
+        
+        
+        
     }
     @IBAction func updateContact(sender: AnyObject) {
     }
