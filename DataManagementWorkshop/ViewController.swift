@@ -8,12 +8,14 @@
 
 import UIKit
 
-class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     @IBOutlet weak var phone: UITextField!
     @IBOutlet weak var address: UITextField!
     @IBOutlet weak var name: UITextField!
     @IBOutlet weak var status: UILabel!
+    
+    @IBOutlet weak var tableView: UITableView!
     
     var contacts: [String] = []
     
@@ -22,12 +24,20 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     var selectStatement: COpaquePointer = nil
     var updateStatement: COpaquePointer = nil
     var deleteStatement: COpaquePointer = nil
+    var selectAllStatement: COpaquePointer = nil
     
     let SQLITE_TRANSIENT = unsafeBitCast(-1, sqlite3_destructor_type.self)
     
     override func viewDidLoad() {
+        
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        self.tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+        tableView.delegate = self
+        tableView.dataSource = self
+        
+        
+        
         let paths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
         print(paths)
         
@@ -44,6 +54,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             print(sqlite3_errmsg(contactDB))
         }
         prepareStatements()
+        loadAllContacts()
     }
 
     func prepareStatements(){
@@ -65,6 +76,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         cSql = sqlString.cStringUsingEncoding(NSUTF8StringEncoding)
         sqlite3_prepare_v2(contactDB, cSql!, -1, &deleteStatement, nil)
         
+        sqlString = "SELECT name FROM CONTACTS"
+        cSql = sqlString.cStringUsingEncoding(NSUTF8StringEncoding)
+        sqlite3_prepare_v2(contactDB, cSql!, -1, &selectAllStatement, nil)
+        
     }
     
     @IBAction func createContact(sender: AnyObject) {
@@ -85,6 +100,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
         sqlite3_reset(insertStatement)
         sqlite3_clear_bindings(insertStatement)
+        loadAllContacts()
+
     }
     
     @IBAction func DeleteContact(sender: AnyObject) {
@@ -106,7 +123,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         sqlite3_reset(deleteStatement)
         sqlite3_clear_bindings(deleteStatement)
         
-        
+        loadAllContacts()
+
         
     }
     @IBAction func updateContact(sender: AnyObject) {
@@ -126,6 +144,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
         sqlite3_reset(updateStatement)
         sqlite3_clear_bindings(updateStatement)
+        loadAllContacts()
+
     }
     
     @IBAction func findContact(sender: AnyObject) {
@@ -149,6 +169,48 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         sqlite3_reset(selectStatement)
         sqlite3_clear_bindings(selectStatement)
     }
+    
+    
+    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+        // #warning Incomplete implementation, return the number of sections
+        return 1
+    }
+    
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        // #warning Incomplete implementation, return the number of rows
+        return contacts.count
+    }
+    
+    
+    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
+        cell.textLabel?.text = contacts[indexPath.row]
+        return cell
+    }
+    
+    func loadAllContacts() {
+        contacts = []
+        while (sqlite3_step(selectAllStatement) == SQLITE_ROW){
+            let name_buf = sqlite3_column_text(selectAllStatement, 0)
+            let name = String.fromCString(UnsafePointer<CChar>(name_buf))
+            contacts.append(name!)
+            print(name)
+        } /*
+        if (sqlite3)
+        else {
+            contacts = []
+            status.text = "Failed to retrieve all the contacts"
+            address.text = " "
+            phone.text = " "
+            print("Error code: \(sqlite3_errcode(contactDB))")
+            let error = String.fromCString(sqlite3_errmsg(contactDB))
+            print("Error Message: ",error)
+        }
+ */
+        sqlite3_reset(selectAllStatement)
+        tableView.reloadData()
+    }
+    
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()

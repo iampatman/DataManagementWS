@@ -102,6 +102,7 @@
                         <outlet property="name" destination="e8n-4x-quc" id="gQc-pa-pw5"/>
                         <outlet property="phone" destination="xKc-1g-Aev" id="sGm-Oo-BAv"/>
                         <outlet property="status" destination="c5M-Kb-S5E" id="m19-i5-MHC"/>
+                        <outlet property="tableView" destination="xX9-Yz-8aK" id="rdU-bP-jZt"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
