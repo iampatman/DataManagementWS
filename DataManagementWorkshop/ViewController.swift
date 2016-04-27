@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
 
     @IBOutlet weak var phone: UITextField!
     @IBOutlet weak var address: UITextField!
@@ -31,6 +31,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     override func viewDidLoad() {
         
         super.viewDidLoad()
+        
+        phone.delegate = self
+        address.delegate = self
+        name.delegate = self
+        
         // Do any additional setup after loading the view, typically from a nib.
         self.tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: "Cell")
         tableView.delegate = self
@@ -101,6 +106,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         sqlite3_reset(insertStatement)
         sqlite3_clear_bindings(insertStatement)
         loadAllContacts()
+        hideKeyBoard()
 
     }
     
@@ -124,7 +130,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         sqlite3_clear_bindings(deleteStatement)
         
         loadAllContacts()
-
+        hideKeyBoard()
         
     }
     @IBAction func updateContact(sender: AnyObject) {
@@ -168,6 +174,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
         sqlite3_reset(selectStatement)
         sqlite3_clear_bindings(selectStatement)
+        hideKeyBoard()
     }
     
     
@@ -209,6 +216,19 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
  */
         sqlite3_reset(selectAllStatement)
         tableView.reloadData()
+    }
+    
+    func textFieldShouldReturn(textField: UITextField) -> Bool {
+        name.resignFirstResponder()
+        address.resignFirstResponder()
+        phone.resignFirstResponder()
+        return true
+    }
+    
+    func hideKeyBoard(){
+        name.resignFirstResponder()
+        address.resignFirstResponder()
+        phone.resignFirstResponder()
     }
     
     
